@@ -5,17 +5,25 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mpaulagom/go-web-supermarket/internal"
-	"github.com/mpaulagom/go-web-supermarket/repository"
 )
 
-var (
-	filePath = "/Users/mariapaulgom/Documents/go-web-supermarket/products.json"
-)
-var repoJson = repository.NewRepositoryJson(filePath)
-var supermarket = internal.NewSuperMarket(repoJson)
+// ControllerProducts is an struct that represents a controller for products
+// exposing methods to handle products
+type ControllerProducts struct {
+	//db     []*repository.Product
+	sp     *internal.SuperMarket
+	lastId int
+}
 
-func ProductsGet(ctx *gin.Context) {
-	allProducts, err := supermarket.GetAllProducts()
+func NewControllerProducts(sp *internal.SuperMarket, lastId int) *ControllerProducts {
+	return &ControllerProducts{
+		sp:     sp,
+		lastId: lastId,
+	}
+}
+
+func (c *ControllerProducts) ProductsGet(ctx *gin.Context) {
+	allProducts, err := c.sp.GetAllProducts()
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err)
 		return
@@ -23,8 +31,8 @@ func ProductsGet(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, allProducts)
 }
 
-func ProductsGetById(ctx *gin.Context) {
-	product, err := supermarket.GetById(ctx.Param("id"))
+func (c *ControllerProducts) ProductsGetById(ctx *gin.Context) {
+	product, err := c.sp.GetById(ctx.Param("id"))
 
 	if err != nil {
 		switch err {
@@ -39,8 +47,8 @@ func ProductsGetById(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, product)
 }
 
-func ProductsSearch(ctx *gin.Context) {
-	products, err := supermarket.SearchProduct(ctx.Query("priceGt"))
+func (c *ControllerProducts) ProductsSearch(ctx *gin.Context) {
+	products, err := c.sp.SearchProduct(ctx.Query("priceGt"))
 	if err != nil {
 		ctx.String(http.StatusBadRequest, err.Error())
 		return
