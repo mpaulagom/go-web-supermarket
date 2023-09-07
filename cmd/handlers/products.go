@@ -17,8 +17,16 @@ func ProductsGet(ctx *gin.Context) {
 
 func ProductsGetById(ctx *gin.Context) {
 	product, err := supermarket.GetById(ctx.Param("id"))
+
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, err)
+		switch err {
+		case internal.ErrProductNotFound:
+			ctx.JSON(http.StatusNotFound, err.Error())
+			return
+		default:
+			ctx.JSON(http.StatusBadRequest, err)
+			return
+		}
 	}
 	ctx.JSON(http.StatusOK, product)
 }

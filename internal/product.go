@@ -8,6 +8,11 @@ import (
 	"github.com/mpaulagom/go-web-supermarket/repository"
 )
 
+var (
+	ErrEmptySupermarket = errors.New("no products in this supermarket")
+	ErrProductNotFound  = errors.New("product not found")
+)
+
 type Product struct {
 	Id          int     `json:"id"`
 	Name        string  `json:"name"`
@@ -38,6 +43,10 @@ func (s SuperMarket) GetAllProducts() (p []Product) {
 }
 func (s SuperMarket) GetById(id string) (product Product, err error) {
 	//jsonProducts, err := repository.LoadData()
+	if len(s.Products) == 0 {
+		err = ErrEmptySupermarket
+		return
+	}
 	idInt, err := strconv.Atoi(id)
 	if err != nil {
 		return
@@ -50,12 +59,13 @@ func (s SuperMarket) GetById(id string) (product Product, err error) {
 			return
 		}
 	}
+	err = ErrProductNotFound
 	return
 }
 
 func (s SuperMarket) SearchProduct(priceS string) (prs []Product, err error) {
 	if len(s.Products) == 0 {
-		err = errors.New("no products in this supermarket")
+		err = ErrEmptySupermarket
 		return
 	}
 
