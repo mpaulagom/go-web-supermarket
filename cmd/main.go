@@ -12,7 +12,7 @@ func main() {
 	superPaths := server.Group("products")
 	superPaths.GET("/", handlers.ProductsGet)
 	superPaths.GET("/:id", handlers.ProductsGetById)
-	superPaths.GET("/search", handlers.ProductsGetById)
+	superPaths.GET("/search", handlers.ProductsSearch)
 
 	server.Run(":8080")
 }
