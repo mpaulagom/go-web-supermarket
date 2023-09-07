@@ -2,12 +2,15 @@ package internal
 
 import (
 	"testing"
+
+	"github.com/mpaulagom/go-web-supermarket/repository"
 )
 
 func TestSearchProductHappy(t *testing.T) {
 
 	//Arrange
-	testProdcuts := []Product{
+	mockRepo := &repository.MockRepository{}
+	testProdcuts := []*repository.Product{
 		{1, "Oil - Margarine", 439, "S82254D", true, "15/12/2021", 71.42},
 		{2, "Pineapple - Canned, Rings", 345, "M4637", true, "09/08/2021", 352.79},
 		{3, "Wine - Red Oakridge Merlot", 367, "T65812", false, "24/05/2021", 179.23},
@@ -15,10 +18,11 @@ func TestSearchProductHappy(t *testing.T) {
 		{5, "Flavouring Vanilla Artificial", 336, "S60152S", true, "10/02/2022", 839.02},
 		{6, "Cake - Lemon Chiffon", 446, "S51821A", true, "06/04/2022", 895.88},
 	}
+	//esto no se si esta bien (?)
+	mockRepo.Products = testProdcuts
+	sp := NewSuperMarket(mockRepo)
 
-	sp := SuperMarket{}
-	sp.Products = testProdcuts
-	expectRes := []Product{
+	expectRes := []repository.Product{
 		{5, "Flavouring Vanilla Artificial", 336, "S60152S", true, "10/02/2022", 839.02},
 		{6, "Cake - Lemon Chiffon", 446, "S51821A", true, "06/04/2022", 895.88},
 	}
@@ -35,7 +39,8 @@ func TestSearchProductHappy(t *testing.T) {
 
 func TestSearchProductsNull(t *testing.T) {
 	//Arrange
-	sp := SuperMarket{}
+	mockRepo := &repository.MockRepository{}
+	sp := NewSuperMarket(mockRepo)
 	//Act
 	_, err := sp.SearchProduct("801.0")
 	//Assert

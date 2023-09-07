@@ -5,13 +5,21 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mpaulagom/go-web-supermarket/internal"
+	"github.com/mpaulagom/go-web-supermarket/repository"
 )
 
-var supermarket internal.SuperMarket = internal.LoadSuperMarket(
-	"/Users/mariapaulgom/Documents/go-web-supermarket/products.json")
+var (
+	filePath = "/Users/mariapaulgom/Documents/go-web-supermarket/products.json"
+)
+var repoJson = repository.NewRepositoryJson(filePath)
+var supermarket = internal.NewSuperMarket(repoJson)
 
 func ProductsGet(ctx *gin.Context) {
-	allProducts := supermarket.GetAllProducts()
+	allProducts, err := supermarket.GetAllProducts()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err)
+		return
+	}
 	ctx.JSON(http.StatusOK, allProducts)
 }
 

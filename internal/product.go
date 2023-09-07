@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"encoding/json"
 	"errors"
 	"strconv"
 
@@ -13,37 +12,36 @@ var (
 	ErrProductNotFound  = errors.New("product not found")
 )
 
-type Product struct {
-	Id          int     `json:"id"`
-	Name        string  `json:"name"`
-	Quantity    int     `json:"quantity"`
-	Code        string  `json:"code_value"`
-	IsPublished bool    `json:"is_published"`
-	Expiration  string  `json:"expiration"`
-	Price       float64 `json:"price"`
+func NewSuperMarket(rj repository.Repository) *SuperMarket {
+	return &SuperMarket{rj: rj}
 }
 
 type SuperMarket struct {
-	Products []Product
+	rj repository.Repository
 }
 
-func LoadSuperMarket(filePath string) (sp SuperMarket) {
-	sp = SuperMarket{}
-	jsonProducts, err := repository.LoadData(filePath)
+/*
+	 func LoadSuperMarket(filePath string) (sp SuperMarket) {
+		sp = SuperMarket{}
+		jsonProducts, err := repository.LoadData(filePath)
+		if err != nil {
+			return
+		}
+		json.Unmarshal(jsonProducts, &sp.Products)
+		// = jsonProducts.([]Product)
+		return
+	}
+*/
+func (s SuperMarket) GetAllProducts() (products []*repository.Product, err error) {
+	products, err = s.rj.LoadSuperMarket()
+	return
+}
+func (s SuperMarket) GetById(id string) (product repository.Product, err error) {
+	products, err := s.rj.LoadSuperMarket()
 	if err != nil {
 		return
 	}
-	json.Unmarshal(jsonProducts, &sp.Products)
-	// = jsonProducts.([]Product)
-	return
-}
-func (s SuperMarket) GetAllProducts() (p []Product) {
-	p = s.Products
-	return
-}
-func (s SuperMarket) GetById(id string) (product Product, err error) {
-	//jsonProducts, err := repository.LoadData()
-	if len(s.Products) == 0 {
+	if len(products) == 0 {
 		err = ErrEmptySupermarket
 		return
 	}
@@ -53,9 +51,9 @@ func (s SuperMarket) GetById(id string) (product Product, err error) {
 	}
 
 	//products := jsonProducts.([]Product)
-	for _, pr := range s.Products {
+	for _, pr := range products {
 		if pr.Id == idInt {
-			product = pr
+			product = *pr
 			return
 		}
 	}
@@ -63,8 +61,12 @@ func (s SuperMarket) GetById(id string) (product Product, err error) {
 	return
 }
 
-func (s SuperMarket) SearchProduct(priceS string) (prs []Product, err error) {
-	if len(s.Products) == 0 {
+func (s SuperMarket) SearchProduct(priceS string) (prs []repository.Product, err error) {
+	products, err := s.rj.LoadSuperMarket()
+	if err != nil {
+		return
+	}
+	if len(products) == 0 {
 		err = ErrEmptySupermarket
 		return
 	}
@@ -73,9 +75,9 @@ func (s SuperMarket) SearchProduct(priceS string) (prs []Product, err error) {
 	if err != nil {
 		return
 	}
-	for _, pr := range s.Products {
+	for _, pr := range products {
 		if pr.Price > price {
-			prs = append(prs, pr)
+			prs = append(prs, *pr)
 		}
 	}
 	return
