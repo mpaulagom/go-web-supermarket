@@ -4,9 +4,14 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mpaulagom/go-web-supermarket/internal/domain"
 	"github.com/mpaulagom/go-web-supermarket/internal/product"
-	"github.com/mpaulagom/go-web-supermarket/repository"
 )
+
+// Los modelos reflan las necesidad de la base de datos
+
+//los dtos=objeto de transferencia de datos reflejan las necesidas del usuario de entrada y salida
+//Oculto toda la información que me interesa que sea privada
 
 //Por lo general cuando se crea un constructor, se crea una esrtuctura de conifugracion
 /* type Config struct {
@@ -19,7 +24,7 @@ y al constructor del controller le pasamos el Config
 // exposing methods to handle products
 type ControllerProducts struct {
 	//a efectos del post en memoria
-	memoryProducts []*repository.Product
+	memoryProducts []*domain.Product
 	lastId         int
 	sp             *product.SuperMarket
 }
@@ -121,7 +126,7 @@ func (c *ControllerProducts) SaveProduct() gin.HandlerFunc {
 			return
 		}
 		//process
-		pr := &repository.Product{
+		pr := &domain.Product{
 			Name:       req.Name,
 			Quantity:   req.Quantity,
 			Code:       req.Code,

@@ -4,26 +4,26 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/mpaulagom/go-web-supermarket/repository"
+	"github.com/mpaulagom/go-web-supermarket/internal/domain"
 )
 
 var (
-	ErrEmptySupermarket = errors.New("no products in this supermarket")
+	ErrEmptySupermarket = errors.New("no domain.Products in this supermarket")
 	ErrProductNotFound  = errors.New("product not found")
 )
 
-func NewSuperMarket(rj repository.Repository) *SuperMarket {
+func NewSuperMarket(rj Repository) *SuperMarket {
 	return &SuperMarket{rj: rj}
 }
 
 type SuperMarket struct {
-	rj repository.Repository
+	rj Repository
 }
 
 /*
 	 func LoadSuperMarket(filePath string) (sp SuperMarket) {
 		sp = SuperMarket{}
-		jsonProducts, err := repository.LoadData(filePath)
+		jsonProducts, err := LoadData(filePath)
 		if err != nil {
 			return
 		}
@@ -32,11 +32,12 @@ type SuperMarket struct {
 		return
 	}
 */
-func (s SuperMarket) GetAllProducts() (products []*repository.Product, err error) {
+func (s SuperMarket) GetAllProducts() (products []*domain.Product, err error) {
 	products, err = s.rj.LoadSuperMarket()
 	return
 }
-func (s SuperMarket) GetById(id string) (product repository.Product, err error) {
+
+func (s SuperMarket) GetById(id string) (product domain.Product, err error) {
 	products, err := s.rj.LoadSuperMarket()
 	if err != nil {
 		return
@@ -61,7 +62,7 @@ func (s SuperMarket) GetById(id string) (product repository.Product, err error) 
 	return
 }
 
-func (s SuperMarket) SearchProduct(priceS string) (prs []repository.Product, err error) {
+func (s SuperMarket) SearchProduct(priceS string) (prs []domain.Product, err error) {
 	products, err := s.rj.LoadSuperMarket()
 	if err != nil {
 		return

@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mpaulagom/go-web-supermarket/cmd/handlers"
 	"github.com/mpaulagom/go-web-supermarket/internal/product"
-	"github.com/mpaulagom/go-web-supermarket/repository"
 )
 
 var (
@@ -13,7 +12,7 @@ var (
 
 func main() {
 
-	var repoJson = repository.NewRepositoryJson(filePath)
+	var repoJson = product.NewRepositoryJson(filePath)
 	var supermarket = product.NewSuperMarket(repoJson)
 	ct := handlers.NewControllerProducts(supermarket, 0)
 

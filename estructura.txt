@@ -1,0 +1,14 @@
+
+
+Controlador : 
+    recibe las peticiones del handlers
+    revisa si las peticiones que recbie son correctas, si los datos estan correctos
+    hace las validaciones
+    es nuestra comunicacion directa con el cliente
+
+Servicio:
+    lugar donde se alojan lsa reglas de nuestra aplicacion
+    logica de negocio
+
+Repositorio:
+    se comunica directamente con la base de datos
