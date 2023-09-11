@@ -1,37 +1,25 @@
 package product
 
 import (
-	"encoding/json"
-	"io"
-	"os"
+	"errors"
 
 	"github.com/mpaulagom/go-web-supermarket/internal/domain"
 )
 
+var (
+	ErrEmptySupermarket = errors.New("no domain.Products in this supermarket")
+	ErrProductNotFound  = errors.New("product not found")
+)
+
 type Repository interface {
-	LoadSuperMarket() (products []*domain.Product, err error)
-}
-type RepositoryJson struct {
-	FilePath string
-}
-
-// Cuando usar un puntero o no en un slice' si voy a tener una estructura unica
-// y no necesito tener otros repositorios que tengan que referenciar directamente a la misma
-// slice ahi si tendria que usar un puntero, pero si no no hace falta
-func NewRepositoryJson(fpath string) *RepositoryJson {
-	return &RepositoryJson{FilePath: fpath}
-}
-
-func (rs *RepositoryJson) LoadSuperMarket() (products []*domain.Product, err error) {
-	data, err := os.Open(rs.FilePath)
-	if err != nil {
-		return
-	}
-	jsonProducts, err := io.ReadAll(data)
-	//jsonProducts, err := rs.LoadData()
-	if err != nil {
-		return
-	}
-	json.Unmarshal(jsonProducts, &products)
-	return
+	// ReadAllData returns all the producrs read from the .json
+	ReadAllData() (products []*domain.Product, err error)
+	// GetById returns a product by id
+	GetById(id int) (*domain.Product, error)
+	// SearchProduct search for the products with price greater than the param price
+	SearchProduct(price float64) (prs []domain.Product, err error)
+	// Update updates a product by its id
+	Update(id int, product *domain.Product) error
+	// Delete delets a product by its id
+	Delete(id int) error
 }
