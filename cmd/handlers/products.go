@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mpaulagom/go-web-supermarket/internal/domain"
 	"github.com/mpaulagom/go-web-supermarket/internal/product"
+	"github.com/mpaulagom/go-web-supermarket/pkg/web"
 )
 
 /* APUNTE:
@@ -72,24 +73,15 @@ func (c *ControllerProducts) ProductsGet(ctx *gin.Context) {
 func (c *ControllerProducts) ProductsGetById(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid product identifier",
-		})
+		web.ManageErrorResponse(ctx, err, "invalid product identifier")
+		return
 	}
+
 	// Get the product from the service.
 	productE, err := c.serviceProduct.GetById(id)
 	if err != nil {
-		switch err {
-		case product.ErrProductNotFound:
-			ctx.JSON(http.StatusNotFound, gin.H{
-				"error": "product not found"})
-			return
-		default:
-			ctx.JSON(http.StatusBadRequest, gin.H{
-				"error": "internal server error",
-			})
-			return
-		}
+		web.ManageErrorResponse(ctx, err, "product not found")
+		return
 	}
 	// Return the product.
 	ctx.JSON(http.StatusOK, Data{
@@ -206,6 +198,7 @@ func (ct *ControllerProducts) Update(ctx *gin.Context) {
 	}
 	// Prepare valid dto to service layer
 	pr := &domain.Product{
+		Id:         id,
 		Name:       req.Name,
 		Quantity:   req.Quantity,
 		Code:       req.Code,
@@ -214,6 +207,9 @@ func (ct *ControllerProducts) Update(ctx *gin.Context) {
 	}
 	// Update the product
 	ct.serviceProduct.Update(id, pr)
+	ctx.JSON(http.StatusOK, gin.H{
+		"Message": "product updated correctly",
+	})
 }
 
 func (ct *ControllerProducts) Delete(ctx *gin.Context) {

@@ -74,7 +74,10 @@ func (rp ProductStorage) Update(id int, product *domain.Product) (err error) {
 		}
 	}
 	productsJson, err := json.Marshal(products)
-	os.WriteFile("products.json", productsJson, 0644)
+	if err != nil {
+		return
+	}
+	err = os.WriteFile(rp.FilePath, productsJson, 0644)
 	return
 }
 
