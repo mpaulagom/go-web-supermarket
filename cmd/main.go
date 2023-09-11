@@ -1,9 +1,13 @@
 package main
 
 import (
+	"os"
+
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/mpaulagom/go-web-supermarket/cmd/handlers"
 	"github.com/mpaulagom/go-web-supermarket/internal/product"
+	"github.com/mpaulagom/go-web-supermarket/pkg/store"
 )
 
 var (
@@ -11,25 +15,35 @@ var (
 )
 
 func main() {
+	//Agarra el archivo .env y hace el os.setEnv con mis clave valor
+	if err := godotenv.Load(); err != nil {
+		panic(err)
+	}
+	fpath := os.Getenv("JSON_FILEPATH")
+	token := os.Getenv("TOKEN")
+	var repoJson = store.NewProductStorage(fpath)
+	var productService = product.NewProductsService(repoJson)
+	productHandler := handlers.NewControllerProducts(productService, 0, token)
 
-	var repoJson = product.NewRepositoryJson(filePath)
-	var supermarket = product.NewSuperMarket(repoJson)
-	ct := handlers.NewControllerProducts(supermarket, 0)
+	/* APUNTE:
+	rt := gin.New()
+	-> middlewares
+	el logger puede tener un timer por ejeplo y por detras darme el tiempo que demora la request
+		rt.Use(gin.Logger())
+		rt.Use(gin.Recovery())
+	Default ya crea los middlewares, pero de esta forma lo puedo manejar mas manual
+	*/
 
-	/* rt := gin.New()
-	// -> middlewares
-	//el logger puede tener un timer por ejeplo y por detras darme el tiempo que demora la request
-	rt.Use(gin.Logger())
-	rt.Use(gin.Recovery()) */
-	//Default ya crea los middlewares
 	server := gin.Default()
 
-	marketPaths := server.Group("products")
-	marketPaths.GET("/", ct.ProductsGet)
-	marketPaths.GET("/inmemory", ct.MemoryProductsGet)
-	marketPaths.GET("/:id", ct.ProductsGetById)
-	marketPaths.GET("/search", ct.ProductsSearch)
-	marketPaths.POST("/", ct.SaveProduct())
+	productPaths := server.Group("products")
+	productPaths.GET("/", productHandler.ProductsGet)
+	productPaths.GET("/inmemory", productHandler.MemoryProductsGet)
+	productPaths.GET("/:id", productHandler.ProductsGetById)
+	productPaths.PUT("/:id", productHandler.Update)
+	productPaths.DELETE("/:id", productHandler.Delete)
+	productPaths.GET("/search", productHandler.ProductsSearch)
+	productPaths.POST("/", productHandler.SaveProduct())
 
 	server.Run(":8080")
 }
