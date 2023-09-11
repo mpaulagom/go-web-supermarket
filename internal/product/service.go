@@ -1,85 +1,60 @@
 package product
 
 import (
-	"errors"
-	"strconv"
-
 	"github.com/mpaulagom/go-web-supermarket/internal/domain"
 )
 
-var (
-	ErrEmptySupermarket = errors.New("no domain.Products in this supermarket")
-	ErrProductNotFound  = errors.New("product not found")
-)
-
-func NewSuperMarket(rj Repository) *SuperMarket {
-	return &SuperMarket{rj: rj}
+type Service interface {
+	GetById(id int) (*domain.Product, error)
+	Update(id int, product *domain.Product) error
+	Delete(id int) error
+	GetAllProducts() (products []*domain.Product, err error)
+	SearchProduct(priceS float64) (prs []domain.Product, err error)
 }
 
-type SuperMarket struct {
-	rj Repository
+// NewProductsService returns a new service with the dependency to repository
+func NewProductsService(repository Repository) *ProductsService {
+	return &ProductsService{repository: repository}
 }
 
-/*
-	 func LoadSuperMarket(filePath string) (sp SuperMarket) {
-		sp = SuperMarket{}
-		jsonProducts, err := LoadData(filePath)
-		if err != nil {
-			return
-		}
-		json.Unmarshal(jsonProducts, &sp.Products)
-		// = jsonProducts.([]Product)
-		return
-	}
-*/
-func (s SuperMarket) GetAllProducts() (products []*domain.Product, err error) {
-	products, err = s.rj.LoadSuperMarket()
+type ProductsService struct {
+	repository Repository
+}
+
+// GetAllProducts returns all the products in the repository
+func (s ProductsService) GetAllProducts() (products []*domain.Product, err error) {
+	products, err = s.repository.ReadAllData()
 	return
 }
 
-func (s SuperMarket) GetById(id string) (product domain.Product, err error) {
-	products, err := s.rj.LoadSuperMarket()
+// GetById returns a product by its id
+func (s ProductsService) GetById(id int) (producto *domain.Product, err error) {
+	producto, err = s.repository.GetById(id)
 	if err != nil {
 		return
 	}
-	if len(products) == 0 {
-		err = ErrEmptySupermarket
-		return
-	}
-	idInt, err := strconv.Atoi(id)
-	if err != nil {
-		return
-	}
-
-	//products := jsonProducts.([]Product)
-	for _, pr := range products {
-		if pr.Id == idInt {
-			product = *pr
-			return
-		}
-	}
-	err = ErrProductNotFound
 	return
 }
 
-func (s SuperMarket) SearchProduct(priceS string) (prs []domain.Product, err error) {
-	products, err := s.rj.LoadSuperMarket()
-	if err != nil {
-		return
-	}
-	if len(products) == 0 {
-		err = ErrEmptySupermarket
-		return
-	}
+// SearchProducts searches for products whith price >= priceS
+func (s ProductsService) SearchProduct(priceS float64) (prs []domain.Product, err error) {
+	prs, err = s.repository.SearchProduct(priceS)
+	return
+}
 
-	price, err := strconv.ParseFloat(priceS, 64)
+// Update updates a product by its id
+func (s ProductsService) Update(id int, product *domain.Product) error {
+	return s.repository.Update(id, product)
+}
+
+// Delete deletes a product by its id
+func (s ProductsService) Delete(id int) (err error) {
+	err = s.repository.Delete(id)
 	if err != nil {
-		return
-	}
-	for _, pr := range products {
-		if pr.Price > price {
-			prs = append(prs, *pr)
+		if err != ErrProductNotFound {
+			return
 		}
+		err = nil
 	}
 	return
 }
