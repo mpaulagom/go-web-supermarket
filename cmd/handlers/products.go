@@ -62,23 +62,26 @@ type ResponseBody struct {
 
 // ProductsGet returns all the products in the repository
 // swaggo docs
-// @Summary
-// @Description
+// @Summary Gets all the products
+// @Description Get the list of all the available products
 // @Tags products
 // @Produce json
-// @Success
+// @Param token header string true "token"
+// @Success 200 {object}
 // @Failure 500 {object}
 // @Router /products
 func (c *ControllerProducts) ProductsGet(ctx *gin.Context) {
 	allProducts, err := c.serviceProduct.GetAllProducts()
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		web.FailureResponse(ctx, errors.New("internal server error"), http.StatusInternalServerError)
 		return
 	}
-	ctx.JSON(http.StatusOK, allProducts)
+	web.SuccessfulResponse(ctx, http.StatusOK, allProducts)
 }
 
 // @Param title path string true "Product identifier"
+// @Summary
+// @Description
 // ProductsGetById returns a product by its id
 func (c *ControllerProducts) ProductsGetById(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
@@ -94,7 +97,7 @@ func (c *ControllerProducts) ProductsGetById(ctx *gin.Context) {
 		return
 	}
 	// Return the product.
-	ctx.JSON(http.StatusOK, Data{
+	web.SuccessfulResponse(ctx, http.StatusOK, Data{
 		Id:       productE.Id,
 		Name:     productE.Name,
 		Quantity: productE.Quantity,
@@ -105,16 +108,14 @@ func (c *ControllerProducts) ProductsGetById(ctx *gin.Context) {
 func (c *ControllerProducts) ProductsSearch(ctx *gin.Context) {
 	price, err := strconv.ParseFloat(ctx.Query("priceGt"), 64)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid price type",
-		})
+		web.FailureResponse(ctx, errors.New("invalid price type"), http.StatusBadRequest)
 	}
 	products, err := c.serviceProduct.SearchProduct(price)
 	if err != nil {
-		ctx.String(http.StatusBadRequest, err.Error())
+		web.FailureResponse(ctx, errors.New("internal server error"), http.StatusInternalServerError)
 		return
 	}
-	ctx.JSON(http.StatusOK, products)
+	web.SuccessfulResponse(ctx, http.StatusOK, products)
 }
 
 /*
@@ -137,13 +138,8 @@ func (c *ControllerProducts) SaveProduct() gin.HandlerFunc {
 
 		//caso de error
 		if err := ctx.ShouldBindJSON(&req); err != nil {
-			code := http.StatusNotFound
-			body := &ResponseBody{
-				Message: "invalid request body",
-				Data:    nil,
-			}
-
-			ctx.JSON(code, body)
+			code := http.StatusBadRequest
+			web.FailureResponse(ctx, errors.New("invalid request body"), code)
 			return
 		}
 		//process
@@ -169,32 +165,25 @@ func (c *ControllerProducts) SaveProduct() gin.HandlerFunc {
 				Price:    pr.Price,
 			},
 		}
-		ctx.JSON(code, rp)
+		web.SuccessfulResponse(ctx, code, rp)
 	}
 }
 
 func (ct *ControllerProducts) MemoryProductsGet(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, ct.memoryProducts)
+	web.SuccessfulResponse(ctx, http.StatusOK, ct.memoryProducts)
 }
 
 func (ct *ControllerProducts) Update(ctx *gin.Context) {
 	// Get the ID from the URL.
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid product identifier",
-		})
+		web.FailureResponse(ctx, errors.New("invalid product identifier"), http.StatusBadRequest)
 		return
 	}
 	var req RequestBody
 	// Bind the request.
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		code := http.StatusNotFound
-		body := &ResponseBody{
-			Message: "invalid request body",
-			Data:    nil,
-		}
-		ctx.JSON(code, body)
+		web.FailureResponse(ctx, errors.New("invalid request body"), http.StatusBadRequest)
 		return
 	}
 	// Prepare valid dto to service layer
@@ -208,28 +197,25 @@ func (ct *ControllerProducts) Update(ctx *gin.Context) {
 	}
 	// Update the product
 	ct.serviceProduct.Update(id, pr)
-	ctx.JSON(http.StatusOK, gin.H{
+	web.SuccessfulResponse(ctx, http.StatusOK, gin.H{
 		"Message": "product updated correctly",
 	})
 }
 
+// Delete deletes the product by its id
 func (ct *ControllerProducts) Delete(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid product identifier",
-		})
+		web.FailureResponse(ctx, errors.New("invalid product identifier"), http.StatusBadRequest)
 		return
 	}
 	err = ct.serviceProduct.Delete(id)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			// No se debe retornar el error que dio, lo puse provisioriamente para identificar que paso
-			"error": err.Error(),
-		})
+		web.FailureResponse(ctx, errors.New("internal server error"), http.StatusInternalServerError)
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{
-		"Message": "product deleted correctly",
+	ct.serviceProduct.Delete(id)
+	web.SuccessfulResponse(ctx, http.StatusOK, gin.H{
+		"Message": "product updated correctly",
 	})
 }
