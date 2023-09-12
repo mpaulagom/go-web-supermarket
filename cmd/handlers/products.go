@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -60,6 +61,14 @@ type ResponseBody struct {
 }
 
 // ProductsGet returns all the products in the repository
+// swaggo docs
+// @Summary
+// @Description
+// @Tags products
+// @Produce json
+// @Success
+// @Failure 500 {object}
+// @Router /products
 func (c *ControllerProducts) ProductsGet(ctx *gin.Context) {
 	allProducts, err := c.serviceProduct.GetAllProducts()
 	if err != nil {
@@ -69,18 +78,19 @@ func (c *ControllerProducts) ProductsGet(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, allProducts)
 }
 
+// @Param title path string true "Product identifier"
 // ProductsGetById returns a product by its id
 func (c *ControllerProducts) ProductsGetById(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		web.ManageErrorResponse(ctx, err, "invalid product identifier")
+		web.FailureResponse(ctx, errors.New("invalid product identifier"), http.StatusBadRequest)
 		return
 	}
 
 	// Get the product from the service.
 	productE, err := c.serviceProduct.GetById(id)
 	if err != nil {
-		web.ManageErrorResponse(ctx, err, "product not found")
+		web.FailureResponse(ctx, errors.New("product not found"), http.StatusNotFound)
 		return
 	}
 	// Return the product.

@@ -1,12 +1,9 @@
 package web
 
 import (
-	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mpaulagom/go-web-supermarket/internal/product"
 )
 
 type errorResponse struct {
@@ -19,34 +16,19 @@ type response struct {
 	Data interface{} `json:"data"`
 }
 
-func ManageErrorResponse(ctx *gin.Context, err error, msg string) *errorResponse {
+// Successful gives a successful response
+func SuccessfulResponse(ctx *gin.Context, status int, data interface{}) {
+	ctx.JSON(status, response{
+		Data: data,
+	})
+}
 
-	if errors.Is(err, strconv.ErrSyntax) {
-		errRep := &errorResponse{
-			Status:  "Bad Request!!",
-			Code:    http.StatusBadRequest,
-			Message: msg,
-		}
-		ctx.JSON(http.StatusBadRequest, errRep)
-		return errRep
-	}
-	switch err {
-	case product.ErrProductNotFound:
-		errRep := &errorResponse{
-			Status:  "Not found",
-			Code:    http.StatusNotFound,
-			Message: msg,
-		}
-		ctx.JSON(http.StatusNotFound, errRep)
-		return errRep
-	default:
-		errRep := &errorResponse{
-			Status:  "Internal Server Error",
-			Code:    http.StatusInternalServerError,
-			Message: "",
-		}
-		ctx.JSON(http.StatusInternalServerError, errRep)
-		return errRep
-	}
+// FailureResponse gives an error response
+func FailureResponse(ctx *gin.Context, err error, code int) *errorResponse {
+	ctx.JSON(code, errorResponse{
+		Message: err.Error(),
+		Code:    code,
+		Status:  http.StatusText(code),
+	})
 	return nil
 }
