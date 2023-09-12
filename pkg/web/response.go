@@ -24,11 +24,10 @@ func SuccessfulResponse(ctx *gin.Context, status int, data interface{}) {
 }
 
 // FailureResponse gives an error response
-func FailureResponse(ctx *gin.Context, err error, code int) *errorResponse {
+func FailureResponse(ctx *gin.Context, err error, code int) {
 	ctx.JSON(code, errorResponse{
 		Message: err.Error(),
 		Code:    code,
 		Status:  http.StatusText(code),
 	})
-	return nil
 }

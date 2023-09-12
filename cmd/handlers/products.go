@@ -134,16 +134,7 @@ func (c *ControllerProducts) SaveProduct() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		var req RequestBody
-		token := ctx.GetHeader("TOKEN")
-		if token != c.token {
-			code := http.StatusUnauthorized
-			body := &ResponseBody{
-				Message: "invalid token",
-				Data:    nil,
-			}
-			ctx.JSON(code, body)
-			return
-		}
+
 		//caso de error
 		if err := ctx.ShouldBindJSON(&req); err != nil {
 			code := http.StatusNotFound

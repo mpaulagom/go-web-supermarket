@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/mpaulagom/go-web-supermarket/cmd/handlers"
+	"github.com/mpaulagom/go-web-supermarket/cmd/middleware"
 	"github.com/mpaulagom/go-web-supermarket/internal/product"
 	"github.com/mpaulagom/go-web-supermarket/pkg/store"
 )
@@ -14,6 +15,8 @@ var (
 	filePath = "/Users/mariapaulgom/Documents/go-web-supermarket/products.json"
 )
 
+// swaggo docs
+// @tittle Products API
 func main() {
 	//Agarra el archivo .env y hace el os.setEnv con mis clave valor
 	if err := godotenv.Load(); err != nil {
@@ -37,6 +40,9 @@ func main() {
 	server := gin.Default()
 
 	productPaths := server.Group("products")
+	// insert the middleware definition before any routes
+	productPaths.Use(middleware.Logger())
+	productPaths.Use(middleware.Authentication(token))
 	productPaths.GET("/", productHandler.ProductsGet)
 	productPaths.GET("/inmemory", productHandler.MemoryProductsGet)
 	productPaths.GET("/:id", productHandler.ProductsGetById)
