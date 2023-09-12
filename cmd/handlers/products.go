@@ -67,9 +67,9 @@ type ResponseBody struct {
 // @Tags products
 // @Produce json
 // @Param token header string true "token"
-// @Success 200 {object}
-// @Failure 500 {object}
-// @Router /products
+// @Success 200 {object} web.response
+// @Failure 500 {object} web.errorResponse
+// @Router /products [get]
 func (c *ControllerProducts) ProductsGet(ctx *gin.Context) {
 	allProducts, err := c.serviceProduct.GetAllProducts()
 	if err != nil {
@@ -79,10 +79,17 @@ func (c *ControllerProducts) ProductsGet(ctx *gin.Context) {
 	web.SuccessfulResponse(ctx, http.StatusOK, allProducts)
 }
 
-// @Param title path string true "Product identifier"
-// @Summary
-// @Description
-// ProductsGetById returns a product by its id
+// ShowAccount godoc
+// @Summary Gets a product by id
+// @Description Returns a product that matches the id
+// @Tags products
+// @Produce json
+// @Param token header string true "token"
+// @Param id path int true "Product id"
+// @Success 200 {object} web.response
+// @Failure 400 {object} web.errorResponse
+// @Failure 500 {object} web.errorResponse
+// @Router /products/{id} [get]
 func (c *ControllerProducts) ProductsGetById(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
@@ -105,6 +112,17 @@ func (c *ControllerProducts) ProductsGetById(ctx *gin.Context) {
 	})
 }
 
+// ShowAccount godoc
+// @Summary Gets products with price bigger than a given price
+// @Description Returns all the products that have a price equal or greater than the given price
+// @Tags products
+// @Produce json
+// @Param token header string true "token"
+// @Param priceGt query float64 true "Product price"
+// @Success 200 {object} web.response
+// @Failure 400 {object} web.errorResponse
+// @Failure 500 {object} web.errorResponse
+// @Router /search [get]
 func (c *ControllerProducts) ProductsSearch(ctx *gin.Context) {
 	price, err := strconv.ParseFloat(ctx.Query("priceGt"), 64)
 	if err != nil {
@@ -131,6 +149,17 @@ func (c *ControllerProducts) ProductsSearch(ctx *gin.Context) {
 */
 
 // SaveProduct saves the product send from the client in memory
+// ShowAccount godoc
+// @Summary Store a product
+// @Description Creates a new product to be saved in the repository
+// @Tags products
+// @Produce json
+// @Param token header string true "token"
+// @Param product body RequestBody true "Product to save"
+// @Success 200 {object} web.response
+// @Failure 400 {object} web.errorResponse
+// @Failure 500 {object} web.errorResponse
+// @Router /products [post]
 func (c *ControllerProducts) SaveProduct() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -169,10 +198,22 @@ func (c *ControllerProducts) SaveProduct() gin.HandlerFunc {
 	}
 }
 
-func (ct *ControllerProducts) MemoryProductsGet(ctx *gin.Context) {
+/* func (ct *ControllerProducts) MemoryProductsGet(ctx *gin.Context) {
 	web.SuccessfulResponse(ctx, http.StatusOK, ct.memoryProducts)
-}
+} */
 
+// ShowAccount godoc
+// @Summary Updates product of given id
+// @Description updates product of given id
+// @Tags products
+// @Produce json
+// @Param token header string true "token"
+// @Param id path int true "Product id"
+// @Param product body RequestBody true "Product to update"
+// @Success 200 {object} web.response
+// @Failure 400 {object} web.errorResponse
+// @Failure 500 {object} web.errorResponse
+// @Router /products/{id} [put]
 func (ct *ControllerProducts) Update(ctx *gin.Context) {
 	// Get the ID from the URL.
 	id, err := strconv.Atoi(ctx.Param("id"))
@@ -202,7 +243,17 @@ func (ct *ControllerProducts) Update(ctx *gin.Context) {
 	})
 }
 
-// Delete deletes the product by its id
+// ShowAccount godoc
+// @Summary Deletes product of given id
+// @Description Deletes product of given id
+// @Tags products
+// @Produce json
+// @Param token header string true "token"
+// @Param id path int true "Product id"
+// @Success 200 {object} web.response
+// @Failure 400 {object} web.errorResponse
+// @Failure 500 {object} web.errorResponse
+// @Router /products/{id} [delete]
 func (ct *ControllerProducts) Delete(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
