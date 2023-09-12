@@ -14,22 +14,22 @@ type Service interface {
 
 // NewProductsService returns a new service with the dependency to repository
 func NewProductsService(repository Repository) *ProductsService {
-	return &ProductsService{repository: repository}
+	return &ProductsService{Repository: repository}
 }
 
 type ProductsService struct {
-	repository Repository
+	Repository Repository
 }
 
 // GetAllProducts returns all the products in the repository
 func (s ProductsService) GetAllProducts() (products []*domain.Product, err error) {
-	products, err = s.repository.ReadAllData()
+	products, err = s.Repository.ReadAllData()
 	return
 }
 
 // GetById returns a product by its id
 func (s ProductsService) GetById(id int) (producto *domain.Product, err error) {
-	producto, err = s.repository.GetById(id)
+	producto, err = s.Repository.GetById(id)
 	if err != nil {
 		return
 	}
@@ -38,18 +38,18 @@ func (s ProductsService) GetById(id int) (producto *domain.Product, err error) {
 
 // SearchProducts searches for products whith price >= priceS
 func (s ProductsService) SearchProduct(priceS float64) (prs []domain.Product, err error) {
-	prs, err = s.repository.SearchProduct(priceS)
+	prs, err = s.Repository.SearchProduct(priceS)
 	return
 }
 
 // Update updates a product by its id
 func (s ProductsService) Update(id int, product *domain.Product) error {
-	return s.repository.Update(id, product)
+	return s.Repository.Update(id, product)
 }
 
 // Delete deletes a product by its id
 func (s ProductsService) Delete(id int) (err error) {
-	err = s.repository.Delete(id)
+	err = s.Repository.Delete(id)
 	if err != nil {
 		if err != ErrProductNotFound {
 			return
